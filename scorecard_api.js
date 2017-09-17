@@ -52,23 +52,22 @@ var ScoreboardSchoolResult = function(json) {
         ["female", ["2014", "student", "demographics", "female_share"]]
     ];
 
-    propertySearch:
     for (var i = 0; i < toLookFor.length; i++) {
         var property = toLookFor[i][0];
         var path = toLookFor[i][1];
         var result = json;
-        var notFoundFlag = false;
+        var foundFlag = true;
         for (var j = 0; j < path.length; j++) {
             var element = path[j];
             try {
                 result = result[element];
             } catch (err) {
                 console.log(element, err);
-                notFoundFlag = true;
+                foundFlag = false;
                 break;
             }
         }
-        if (!notFoundFlag) {
+        if (foundFlag) {
             this[property] = result;
         }
     }
