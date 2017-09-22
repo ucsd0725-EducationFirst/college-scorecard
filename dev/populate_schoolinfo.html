@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Populate Firebase DB</title>
+    </head>
+    <body>
+        <form>
+            <input type="text" id="email" placeholder="email">
+            <br>
+            <input type="text" id="password" placeholder="password">
+            <br>
+            <button type="submit" id="login">Login</button>
+        </form>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
+        <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase.js"></script>
+        <script src="scorecard_api.js" charset="utf-8"></script>
+        <script type="text/javascript">
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBxpTELNwV5kDCAQXTpG-lMzWnIbzcNazs",
+            authDomain: "bentham-endurance.firebaseapp.com",
+            databaseURL: "https://bentham-endurance.firebaseio.com",
+            projectId: "bentham-endurance",
+            storageBucket: "bentham-endurance.appspot.com",
+            messagingSenderId: "305674895801"
+        };
+        firebase.initializeApp(config);
+        var database;
+
+        function IntegerOrZero(x) {
+            if (x === "NULL" || x === "PrivacySuppressed") { return 0; }
+            var result;
+            try {
+                if (result.split("-").length > 1) { result = result.split("-")[0]; }
+                result = Math.floor(x);
+            } catch(err) {
+                result = 0;
+            }
+            if (result === NaN) { return 0; }
+            return result;
+        }
+
+        function FloatOrZero(x) {
+            if (x === "NULL" || x === "PrivacySuppressed") { return 0; }
+            var result;
+            try {
+                result = parseFloat(x);
+            } catch(err) {
+                result = 0;
+            }
+            if (result === NaN) { return 0; }
+            return result;
+        }
+
+        $("#login").click(function(e) {
+            e.preventDefault();
+            var email = $("#email").val();
+            var password = $("#password").val();
+            firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+                console.log(error.code, error.message);
+            }).then(function() {
+                database = firebase.database();
+                $.get("schools.json").done(function(json) {
+                    for (var id in json) {
+                        if (id === "239071") { continue; }
+                        var s = json[id];
+                        var school = {
+                            "name": s["INSTNM"],
+                            "url": s["INSTURL"],
+                            "location": {
+                                "city": s["CITY"],
+                                "state": s["STABBR"],
+                                "region": IntegerOrZero(s["REGION"]),
+                                "locale": IntegerOrZero(s["LOCALE"]),
+                                "zip": IntegerOrZero(s["ZIP"]),
+                                "lat": FloatOrZero(s["LATITUDE"]),
+                                "long": FloatOrZero(s["LONGITUDE"])
+                            },
+                            "tuition": {
+                                "in_state": IntegerOrZero(s["TUITIONFEE_IN"]),
+                                "out_state": IntegerOrZero(s["TUITIONFEE_OUT"]),
+                                "pell_grant_rate": FloatOrZero(s["PCTPELL"])
+                            },
+                            "demographics": {
+                                "size": IntegerOrZero(s["UGDS"]),
+                                "male": FloatOrZero(s["UGDS_MEN"]),
+                                "female": FloatOrZero(s["UGDS_WOMEN"])
+                            },
+                            "admissions": {
+                                "sat": {
+                                    "avg": IntegerOrZero(s["SAT_AVG"]),
+                                    "reading": {
+                                        "25": IntegerOrZero(s["SATVR25"] ),
+                                        "50": IntegerOrZero(s["SATVRMID"]),
+                                        "75": IntegerOrZero(s["SATVR75"] )
+                                    },
+                                    "writing": {
+                                        "25": IntegerOrZero(s["SATWR25"] ),
+                                        "50": IntegerOrZero(s["SATWRMID"]),
+                                        "75": IntegerOrZero(s["SATWR75"] )
+                                    },
+                                    "math": {
+                                        "25": IntegerOrZero(s["SATMT25"] ),
+                                        "50": IntegerOrZero(s["SATMTMID"]),
+                                        "75": IntegerOrZero(s["SATMT75"] )
+                                    }
+                                },
+                                "act": {
+                                    "composite": {
+                                        "25": IntegerOrZero(s["ACTCM25"]),
+                                        "50": IntegerOrZero(s["ACTCMMID"]),
+                                        "75": IntegerOrZero(s["ACTCM75"])
+                                    },
+                                    "english": {
+                                        "25": IntegerOrZero(s["ACTEN25"]),
+                                        "50": IntegerOrZero(s["ACTENMID"]),
+                                        "75": IntegerOrZero(s["ACTEN75"])
+                                    },
+                                    "math": {
+                                        "25": IntegerOrZero(s["ACTMT25"]),
+                                        "50": IntegerOrZero(s["ACTMTMID"]),
+                                        "75": IntegerOrZero(s["ACTMT75"])
+                                    },
+                                    "writing": {
+                                        "25": IntegerOrZero(s["ACTWR25"]),
+                                        "50": IntegerOrZero(s["ACTWRMID"]),
+                                        "75": IntegerOrZero(s["ACTWR75"])
+                                    }
+                                }
+                            },
+                            "salary": {
+                                "starting": {
+                                    "10": IntegerOrZero(s["PCT10_EARN_WNE_P6"]),
+                                    "25": IntegerOrZero(s["PCT25_EARN_WNE_P6"]),
+                                    "50": IntegerOrZero(s["MN_EARN_WNE_P6"]),
+                                    "75": IntegerOrZero(s["PCT75_EARN_WNE_P6"]),
+                                    "90": IntegerOrZero(s["PCT90_EARN_WNE_P6"])
+                                },
+                                "eventual": {
+                                    "10": IntegerOrZero(s["PCT10_EARN_WNE_P10"]),
+                                    "25": IntegerOrZero(s["PCT25_EARN_WNE_P10"]),
+                                    "50": IntegerOrZero(s["MN_EARN_WNE_P10"]),
+                                    "75": IntegerOrZero(s["PCT75_EARN_WNE_P10"]),
+                                    "90": IntegerOrZero(s["PCT90_EARN_WNE_P10"])
+                                }
+                            },
+                            "repayment": {
+                                "median_debt": IntegerOrZero(s["GRAD_DEBT_MDN"]),
+                                "1_yr": FloatOrZero(s["RPY_1YR_RT"]),
+                                "3_yr": FloatOrZero(s["RPY_3YR_RT"]),
+                                "5_yr": FloatOrZero(s["RPY_5YR_RT"]),
+                                "7_yr": FloatOrZero(s["RPY_7YR_RT"])
+                            }
+                        }
+                        database.ref("/schools").child(id).set(school);
+                    }
+                    console.log("finished")
+                });
+            });
+        })
+
+        </script>
+    </body>
+</html>

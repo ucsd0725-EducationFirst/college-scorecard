@@ -8,8 +8,24 @@
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
         <script src="scorecard_api.js" charset="utf-8"></script>
         <script type="text/javascript">
+            // var programs = ["assoc", "bachelors", "certificate_lt_1_yr", "certificate_lt_2_yr", "certificate_lt_4_yr", "degree"];
+            // var fields = ["agriculture", "architecture", "biological", "business_marketing", "communication", "communications_technology", "computer", "construction", "education", "engineering", "engineering_technology", "english", "ethnic_cultural_gender", "family_consumer_science", "health", "history", "humanities", "language", "legal", "library", "mathematics", "mechanic_repair_technology", "military", "multidiscipline", "parks_recreation_fitness", "personal_culinary", "philosophy_religious", "physical_science", "precision_production", "psychology", "public_administration_social_service", "resources", "science_technology", "security_law_enforcement", "social_science", "theology_religious_vocation", "transportation", "visual_performing"];
+            // for (var i = 0; i < programs.length; i++) {
+            //     var p = programs[i];
+            //     var responseFields = "school.name,id,school.state,school.city,school.zip";
+            //     for (var j = 0; j < fields.length; j++) {
+            //         var f = fields[j];
+            //         responseFields += ",2014.academics.program." + p + "." + f;
+            //     }
+            //     var r = new ScorecardRequest().onlyFields(responseFields).radiusAround("92101", "20mi");
+            //     console.log(r.url);
+            //     r.get(function(data) {
+            //         console.log(data);
+            //     })
+            // }
             var request = new ScorecardRequest();
             request.url += "&school.name=university+of+san+diego";
+            console.log(request.url);
             request.get(function(data) {
                 console.log(data);
             })

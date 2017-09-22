@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Populate Firebase DB</title>
+    </head>
+    <body>
+        <form>
+            <input type="text" id="email" placeholder="email">
+            <br>
+            <input type="text" id="password" placeholder="password">
+            <br>
+            <button type="submit" id="login">Login</button>
+        </form>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
+        <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase.js"></script>
+        <script src="scorecard_api.js" charset="utf-8"></script>
+        <script type="text/javascript">
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBxpTELNwV5kDCAQXTpG-lMzWnIbzcNazs",
+            authDomain: "bentham-endurance.firebaseapp.com",
+            databaseURL: "https://bentham-endurance.firebaseio.com",
+            projectId: "bentham-endurance",
+            storageBucket: "bentham-endurance.appspot.com",
+            messagingSenderId: "305674895801"
+        };
+        firebase.initializeApp(config);
+        var database;
+
+        function IntegerOrZero(x) {
+            if (x === "NULL" || x === "PrivacySuppressed") { return 0; }
+            var result;
+            try {
+                if (result.split("-").length > 1) { result = result.split("-")[0]; }
+                result = Math.floor(x);
+            } catch(err) {
+                result = 0;
+            }
+            if (result === NaN) { return 0; }
+            return result;
+        }
+
+        function FloatOrZero(x) {
+            if (x === "NULL" || x === "PrivacySuppressed") { return 0; }
+            var result;
+            try {
+                result = parseFloat(x);
+            } catch(err) {
+                result = 0;
+            }
+            if (result === NaN) { return 0; }
+            return result;
+        }
+
+        var fields = {
+            "01":"agriculture","03":"resources","04":"architecture","05":"ethnic_cultural_gender","09":"communication","10":"communications_technology","11":"computer","12":"personal_culinary","13":"education","14":"engineering","15":"engineering_technology","16":"language","19":"family_consumer_science","22":"legal","23":"english","24":"humanities","25":"library","26":"biological","27":"mathematics","29":"military","30":"multidiscipline","31":"parks_recreation_fitness","38":"philosophy_religious","39":"theology_religious_vocation","40":"physical_science","41":"science_technology","42":"psychology","43":"security_law_enforcement","44":"public_administration_social_service","45":"social_science","46":"construction","47":"mechanic_repair_technology","48":"precision_production","49":"transportation","50":"visual_performing","51":"health","52":"business_marketing","54":"history"
+        }
+
+        var levels = {
+            "CERT1": "certificate_lt_1_yr",
+            "CERT2": "certificate_lt_2_yr",
+            "CERT4": "certificate_lt_4_yr",
+            "ASSOC": "assoc",
+            "BACHL": "bachelors"
+        }
+
+        $("#login").click(function(e) {
+            e.preventDefault();
+            var email = $("#email").val();
+            var password = $("#password").val();
+            firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+                console.log(error.code, error.message);
+            }).then(function() {
+                database = firebase.database();
+                // $.get("schools_degrees.json").done(function(json) {
+                //     // var id = "100654";
+                //     for (var id in json) {
+                //         var raw = json[id];
+                //         var state = raw["STABBR"];
+                //         delete raw["STABBR"];
+                //         for (var p in raw) {
+                //             if (raw[p] == 1) {
+                //                 var fieldCode = p.slice(3,5);
+                //                 var levelCode = p.slice(5);
+                //                 var field = fields[fieldCode];
+                //                 var level = levels[levelCode];
+                //                 database.ref("/fields").child(field).child(id).child("programs").child(level).set(true)
+                //                 database.ref("/fields").child(field).child(id).child("state").set(state);
+                //             }
+                //         }
+                //         console.log(id)
+                //     }
+                //     console.log("finished")
+                // });
+                // $.get("schools_percentages.json").done(function(json) {
+                //     var id = "100654";
+                //     for (var id in json) {
+                //         var raw = json[id];
+                //         var state = raw["STABBR"];
+                //         delete raw["STABBR"];
+                //         for (var p in raw) {
+                //             var perc = FloatOrZero(raw[p]);
+                //             if (perc > 0) {
+                //                 var fieldCode = p.slice(4);
+                //                 var field = fields[fieldCode];
+                //                 database.ref("/fields").child(field).child(id).child("percentage").set(perc);
+                //             }
+                //         }
+                //         console.log(id);
+                //     }
+                //     console.log("finished")
+                // });
+            });
+        })
+
+        </script>
+    </body>
+</html>

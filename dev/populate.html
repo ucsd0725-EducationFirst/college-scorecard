@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Populate Firebase DB</title>
+    </head>
+    <body>
+        <form>
+            <input type="text" id="email" placeholder="email">
+            <br>
+            <input type="text" id="password" placeholder="password">
+            <br>
+            <button type="submit" id="login">Login</button>
+        </form>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
+        <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase.js"></script>
+        <script src="scorecard_api.js" charset="utf-8"></script>
+        <script type="text/javascript">
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBxpTELNwV5kDCAQXTpG-lMzWnIbzcNazs",
+            authDomain: "bentham-endurance.firebaseapp.com",
+            databaseURL: "https://bentham-endurance.firebaseio.com",
+            projectId: "bentham-endurance",
+            storageBucket: "bentham-endurance.appspot.com",
+            messagingSenderId: "305674895801"
+        };
+        firebase.initializeApp(config);
+        var database;
+
+        var programs = ["assoc", "bachelors", "certificate_lt_1_yr", "certificate_lt_2_yr", "certificate_lt_4_yr", "degree"];
+        var fields = ["agriculture", "architecture", "biological", "business_marketing", "communication", "communications_technology", "computer", "construction", "education", "engineering", "engineering_technology", "english", "ethnic_cultural_gender", "family_consumer_science", "health", "history", "humanities", "language", "legal", "library", "mathematics", "mechanic_repair_technology", "military", "multidiscipline", "parks_recreation_fitness", "personal_culinary", "philosophy_religious", "physical_science", "precision_production", "psychology", "public_administration_social_service", "resources", "science_technology", "security_law_enforcement", "social_science", "theology_religious_vocation", "transportation", "visual_performing"];
+        var scorecard_api_key = "w8UC6PgtWN6vn1eAVhLraLW3xwpBlCkO6UnHy8zI";
+        var baseURL = "https://api.data.gov/ed/collegescorecard/v1/schools?api_key=" + scorecard_api_key;
+
+        var activelySearching = false;
+
+        function ScrapePages(url, page) {
+            activelySearching = true;
+            console.log(page);
+            page = page || 0;
+            $.get(url + "&_page=" + page).done(function(json) {
+                var metadata = json.metadata;
+                var results = json.results;
+                for (var r = 0; r < results.length; r++) {
+                    var result = results[r];
+                    var id = result.id;
+                    var state = result["school.state"];
+                    for (prop in result) {
+                        if (prop.slice(0,4) === "2014") {
+                            if (result[prop] > 0) {
+                                var s = prop.split(".");
+                                var program = s[3];
+                                var field = s[4];
+                                database.ref("field").push(id);
+                                console.log(id, state, program, field);
+                            }
+                        }
+                    }
+                }
+                if (metadata.total / metadata.per_page > metadata.page) {
+                    // setTimeout(ScrapePages, 1000, url, page+1);
+                } else {
+                    activelySearching = false;
+                }
+            });
+        }
+
+        var iIntervalID, jIntervalID;
+
+        $("#login").click(function(e) {
+            e.preventDefault();
+            var email = $("#email").val();
+            var password = $("#password").val();
+            firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+                console.log(error.code, error.message);
+            }).then(function() {
+                database = firebase.database();
+                var i = 0;
+                iIntervalID = setInterval(function() {
+                    var f = fields[i];
+                    var responseFields = "id,school.state";
+                    for (var j = 0; j < programs.length; j++) {
+                        var p = programs[j];
+                        responseFields += ",2014.academics.program." + p + "." + f;
+                    }
+                    var url = baseURL + "&_fields=" + responseFields;
+                    ScrapePages(url, 0);
+                    i++;
+                    if (i >= 1) {
+                        clearInterval(iIntervalID);
+                    }
+                }, 1000);
+            });
+        })
+
+        </script>
+    </body>
+</html>

@@ -14,12 +14,13 @@ var ScorecardRequest = function() {
         return this;
     };
 
-    this.radiusAround(zip, distance) {
-        this.url += "&_zip=" + zip + "&_distance=" distance;
+    this.radiusAround = function(zip, distance) {
+        this.url += "&_zip=" + zip + "&_distance=" + distance;
         return this;
     }
 
-    this.get = function(callback) {
+    this.get = function(callback, fail) {
+        var fail = fail || function(error) { console.log(error); }
         var self = this;
         $.get(this.url)
         .done(function(data) {
@@ -31,9 +32,7 @@ var ScorecardRequest = function() {
             });
             callback(schools);
         })
-        .fail(function(error) {
-            console.log(error);
-        })
+        .fail(fail)
         return this;
     };
 };
@@ -44,6 +43,8 @@ var ScoreboardSchoolResult = function(json) {
     var toLookFor = [
         ["name", ["school", "name"]],
         ["url", ["school", "school_url"]],
+        ["lat", ["location", "lat"]],
+        ["long", ["location", "lon"]],
         ["zipCode", ["school", "zip"]],
         ["city", ["school", "city"]],
         ["state", ["school", "state"]],
@@ -62,7 +63,7 @@ var ScoreboardSchoolResult = function(json) {
             try {
                 result = result[element];
             } catch (err) {
-                console.log(element, err);
+                // console.log(element, err);
                 foundFlag = false;
                 break;
             }
